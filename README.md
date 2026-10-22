@@ -1,161 +1,68 @@
-# Autonomous Debugger & Remediation Engine — Backend (Member 2)
+# PrismAi
 
-Member 2 is the orchestrator sitting at the center of the system:
-- **M1 ↔ M2 Seam:** Perception & Sandbox execution (`perception/`)
-- **M2 ↔ M3 Seam:** REST API & Polling State Machine (`http://localhost:8000/api`)
-- **Model Contract:** Nebius / Nemotron context budgeting, prompt sanitization, JSON schema enforcement, and retry loops.
-- **Single Source of Truth:** `shared/schemas.py` (Pydantic v2, `schema_version: "1.0"`).
+An approval-gated developer assistant. Member 1 owns perception and sandbox execution, Member 2 owns the backend orchestrator and shared schemas, and Member 3 owns the frontend and endpoint contract checks.
 
----
+This branch adds Member 3's frontend to Member 2's backend at commit `70f7d3d`. The current perception and sandbox modules simulate collection/execution. Real model and sandbox integration remain team checkpoints.
 
-## 1. Quickstart
+## Local setup
 
-### Prerequisites
-- Python 3.11+
-- Virtual environment
+Requires Python 3.11+ and Node.js 22.12+.
 
-### Setup
-```bash
-# 1. Create and activate virtual environment
-python -m venv venv
-.\venv\Scripts\activate       # Windows PowerShell
-# source venv/bin/activate    # Linux / macOS
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Configure environment
-cp .env.example .env
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+npm ci --prefix frontend
 ```
 
-### Running Tests
-All 21 contract, security, context budgeting, and state machine tests:
-```bash
-pytest -v
+Start the backend from the repository root:
+
+```powershell
+$env:MOCK_MODE='1'
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
-### Starting the Backend
-```bash
-python scripts/run_backend.py
-```
-- **Base URL:** `http://localhost:8000/api`
-- **OpenAPI Schema:** `http://localhost:8000/openapi.json`
-- **Interactive Swagger UI:** `http://localhost:8000/docs`
+In another terminal:
 
----
-
-## 2. Contracts & Integration Boundaries
-
-### Ground Rules
-1. **One Source of Truth:** `shared/schemas.py` owned by Member 2.
-2. **Generated Types for Member 3:** M3 runs `openapi-typescript` against `openapi.json` to generate `frontend/src/api/types.ts`.
-3. **Mocks First:** `MOCK_MODE=1` walks the full state machine with 1-second delays and simulates failure paths for M3 integration.
-4. **Partial Results Over Exceptions:** M1 returns partial context + `warnings`, never raises.
-5. **Schema Versioning:** Every top-level schema includes `schema_version: "1.0"`.
-
----
-
-## 3. REST API (Member 2 → Member 3)
-
-Base URL: `http://localhost:8000/api` (CORS enabled for `http://localhost:5173`).
-
-### Task State Machine
-```
-queued → collecting_context → analyzing → awaiting_approval → executing → completed
-                  ↓                ↓              ↓
-                failed           failed        rejected
-(any non-terminal state) → cancelled
-```
-*Terminal states:* `completed`, `rejected`, `failed`, `cancelled`. Member 3 stops polling on these.
-
-### Endpoints
-
-| Method | Path | Status | Purpose |
-|---|---|---|---|
-| `POST` | `/api/tasks` | `202 Accepted` | Submit task `{command, context}`. Returns `{task_id}`. |
-| `GET` | `/api/tasks/{id}` | `200 OK` | Poll `TaskView` (polled every ~1 s). |
-| `POST` | `/api/tasks/{id}/decision` | `200 OK` | Submit `{proposal_id, decision: "approve" \| "reject"}`. |
-| `POST` | `/api/tasks/{id}/cancel` | `200 OK` | Cancel a running task. |
-| `GET` | `/api/tasks/{id}/screenshot` | `200 OK` | Returns `image/png` (never inlined in `TaskView`). |
-| `GET` | `/api/health` | `200 OK` | Backend + M1 component status. |
-
-### Error Envelope
-All non-2xx responses strictly conform to:
-```json
-{
-  "error": {
-    "code": "INVALID_STATE",
-    "message": "Task is not awaiting approval",
-    "retryable": false
-  }
-}
+```powershell
+npm run dev --prefix frontend
 ```
 
-| Code | HTTP | Meaning |
-|---|---|---|
-| `VALIDATION_ERROR` | 422 | Bad request body |
-| `TASK_NOT_FOUND` | 404 | Unknown task id |
-| `INVALID_STATE` | 409 | Action not allowed in current state |
-| `TASK_IN_PROGRESS` | 409 | Another task is currently running (1 task at a time) |
-| `POLICY_DENIED` | 422 | Proposal violates sandbox policy |
-| `MODEL_UNAVAILABLE` | 502 | Nebius unreachable (retryable: true) |
-| `MODEL_INVALID_RESPONSE` | 502 | Model output failed validation after 2 retries |
-| `CONTEXT_FAILED` | 500 | M1 perception collection failed entirely |
-| `INTERNAL` | 500 | Unhandled internal error |
+Open http://127.0.0.1:5173. Demo mode starts enabled and uses an independent in-browser simulation. Turn it off to connect to the backend through Vite's `/api` proxy. The backend mock also simulates perception and execution; switching off browser Demo mode does not enable real hardware or real execution.
 
----
+Public frontend defaults are documented in `frontend/.env.example`. Backend configuration is documented in the root `.env.example`; backend secrets must never use the `VITE_` prefix.
 
-## 4. Member 1 Boundary (Perception & Sandbox)
+## Verification
 
-Member 1 delivers `perception/`:
-- `collect_context(req: ContextRequest) -> ContextBundle`: returns within 8s, secret-redacted, partial results + `warnings`.
-- `health() -> dict[str, bool]`: `{'tesseract': bool, 'github_token': bool, 'sandbox': bool}`.
-- `sandbox.validate_action(req: ActionRequest) -> tuple[bool, Optional[str]]`: dry-run policy check without side-effects.
-- `sandbox.execute(req: ActionRequest) -> ActionResult`: requires valid HMAC approval token signed with `APPROVAL_SECRET`.
+With an idle backend running in mock mode:
 
-### HMAC Approval Token Algorithm
-```python
-payload_hash = sha256(patch_content or "\0".join(command))
-token = hmac_sha256(key=APPROVAL_SECRET, message=f"{action_id}:{payload_hash}")
+```powershell
+$env:API_BASE_URL='http://127.0.0.1:8000/api'
+npm run test:integration --prefix frontend
+npm test --prefix frontend
+npm run build --prefix frontend
+$env:MOCK_MODE='1'
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
----
+The frontend's eight tests cover fixture schemas, request failures, and mock state/approval behavior. The integration runner exercises all six endpoint routes, response shapes, concurrency, rejection, cancellation, policy denial, model/context failure drills, and PNG screenshots. It does not approve an allowed proposal. Member 2's 21 backend tests cover the simulated approval/execution path as well.
 
-## 5. Model Integration (Nebius / Nemotron)
+For an API-compatible backend without M2's mock drill commands, use `npm run test:contract --prefix frontend`. Real collection, sandbox execution, cancellation of real child processes, and hardware/security drills still need joint verification.
 
-1. **Context Budget:**
-   - OCR text truncated to ~4k characters.
-   - Unified diffs truncated to ~8k characters total.
-   - Files mentioned in stack traces / terminal errors receive top priority.
-   - `truncated: true` flags passed to prompt.
-2. **Prompt Injection Defense:**
-   - Screen and PR texts are passed as quoted JSON data blocks.
-3. **Retry Loop:**
-   - Model must output JSON conforming to `Analysis` (without `policy_ok`).
-   - If output fails Pydantic validation, M2 retries up to 2 times with validation feedback.
-   - If it still fails, marks task as `failed` with code `MODEL_INVALID_RESPONSE`.
+## Shared types
 
----
+`shared/schemas.py` remains owned by Member 2. TypeScript models are generated, not maintained by hand:
 
-## 6. Shared Fixtures (`fixtures/`)
-
-| File | Description |
-|---|---|
-| `fixtures/successful_task.json` | Complete TaskView in `completed` state with actions and diff. |
-| `fixtures/failed_task.json` | TaskView in `failed` state with retryable `MODEL_UNAVAILABLE`. |
-| `fixtures/policy_denied_proposal.json` | TaskView in `awaiting_approval` with `policy_ok: false`. |
-| `fixtures/model_invalid_response.json` | TaskView in `failed` state with non-retryable `MODEL_INVALID_RESPONSE`. |
-| `fixtures/empty_context_with_warnings.json` | M1 `ContextBundle` with `warnings` for missing Tesseract/GitHub rate limit. |
-
----
-
-## 7. M3 TypeScript Type Generation
-
-Run the following command to update frontend types whenever schemas evolve:
-```bash
-# Export schema to disk
-python scripts/export_openapi.py
-
-# Generate TypeScript definitions in frontend
-npx openapi-typescript openapi.json -o frontend/src/api/types.ts
+```powershell
+.\.venv\Scripts\python.exe scripts/sync-backend-contract.py
+npm run generate:types --prefix frontend
 ```
+
+The sync helper exports `fixtures/openapi.json` from FastAPI and `fixtures/error-response.schema.json` from the Python ErrorResponse model. The latter is separate because the backend currently omits it from route OpenAPI response declarations. With a backend running, `npm run generate:types:live --prefix frontend` generates TypeScript directly from `/openapi.json`.
+
+## Team handoffs
+
+- [Member 2: setup, API checks, schema workflow, and remaining backend integration](HANDOFF_MEMBER_2.md)
+- [Member 1: perception/sandbox requirements, interoperability, and security demo cases](HANDOFF_MEMBER_1.md)
+- [Original Member 2 backend documentation](docs/BACKEND_README.md)
+
+Member 3's UI includes context selection, analysis and warning displays, screenshot retrieval, exact diff/argv review, policy-based approval controls, rejection/cancellation, and action output. Task history is limited to the current page session. API errors have explicit retry controls, and polling stops on terminal states.

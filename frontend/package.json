@@ -1,0 +1,6 @@
+{
+  "name": "prism-member-3", "version": "0.1.0", "private": true, "type": "module",
+  "scripts": {"dev":"vite --host 127.0.0.1 --port 5173 --strictPort", "build":"tsc -b && vite build", "generate:types":"openapi-typescript ../fixtures/openapi.json -o src/api/types.ts", "generate:types:live":"openapi-typescript http://127.0.0.1:8000/openapi.json -o src/api/types.ts", "test":"node --test scripts/*.test.mjs", "test:contract":"node scripts/contract.mjs", "test:integration":"node scripts/contract.mjs --member2-mocks"},
+  "dependencies": {"react":"^19.2.0","react-dom":"^19.2.0","lucide-react":"^0.468.0","react-markdown":"^10.1.0"},
+  "devDependencies": {"@types/react":"^19.2.0","@types/react-dom":"^19.2.0","@vitejs/plugin-react":"^5.0.0","typescript":"^5.9.0","vite":"^7.1.0","openapi-typescript":"^7.10.0","ajv":"^8.17.1","ajv-formats":"^3.0.1"}
+}
