@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "task_id": "task-fail-456",
+  "state": "failed",
+  "command": "npm run build",
+  "created_at": "2026-10-22T20:05:00Z",
+  "updated_at": "2026-10-22T20:05:08Z",
+  "context": {
+    "has_screenshot": false,
+    "ocr_excerpt": "",
+    "terminal_errors": [
+      {
+        "exception_type": "BuildError",
+        "message": "Cannot find module '@types/node'",
+        "file": "src/index.ts",
+        "line": 1,
+        "raw_excerpt": "src/index.ts:1:21 - error TS2307: Cannot find module '@types/node' or its corresponding type declarations."
+      }
+    ],
+    "pr_title": null,
+    "pr_files": [],
+    "warnings": []
+  },
+  "analysis": null,
+  "action_results": [],
+  "error": {
+    "code": "MODEL_UNAVAILABLE",
+    "message": "Failed to connect to Nebius AI endpoint: connection timeout after 10000ms",
+    "retryable": true
+  }
+}

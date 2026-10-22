@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "task_id": "task-denied-789",
+  "state": "awaiting_approval",
+  "command": "cleanup logs",
+  "created_at": "2026-10-22T20:10:00Z",
+  "updated_at": "2026-10-22T20:10:05Z",
+  "context": {
+    "has_screenshot": false,
+    "ocr_excerpt": "Disk full error on /var/log",
+    "terminal_errors": [],
+    "pr_title": null,
+    "pr_files": [],
+    "warnings": []
+  },
+  "analysis": {
+    "summary": "Propose disk cleanup operation",
+    "root_cause": "Disk partition space exhausted",
+    "explanation": "### Analysis\nThe log partition has run out of inodes/space.",
+    "confidence": 0.7,
+    "proposals": [
+      {
+        "id": "prop-danger-1",
+        "title": "Purge log folder via rm -rf",
+        "rationale": "Deletes all logs immediately",
+        "risk": "high",
+        "files": [],
+        "commands": [
+          ["rm", "-rf", "/var/log"]
+        ],
+        "policy_ok": false,
+        "policy_denial_reason": "COMMAND_NOT_ALLOWLISTED: 'rm' is not an allowed command in sandbox policy"
+      }
+    ]
+  },
+  "action_results": [],
+  "error": null
+}
