@@ -1,0 +1,850 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Autonomous Debugger & Remediation Engine API",
+    "description": "Member 2 backend orchestrator bridging Member 1 (Perception) and Member 3 (UI).",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/tasks": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Create a new analysis task",
+        "description": "Creates a new task, returning 202 with task_id.\n\nReturns 409 TASK_IN_PROGRESS if another task is currently active.",
+        "operationId": "create_task_api_tasks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreatedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{task_id}": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Get full TaskView for polling",
+        "description": "Returns the full TaskView. Polled by frontend every ~1 s.",
+        "operationId": "get_task_api_tasks__task_id__get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{task_id}/decision": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Submit user decision (approve / reject)",
+        "description": "Submits approval or rejection of a proposal.\n\nRules:\n- Only valid in awaiting_approval; otherwise 409 INVALID_STATE.\n- Approving a proposal with policy_ok=false returns 422 POLICY_DENIED.",
+        "operationId": "submit_decision_api_tasks__task_id__decision_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{task_id}/cancel": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Cancel a running task",
+        "description": "Cancels a running non-terminal task.",
+        "operationId": "cancel_task_api_tasks__task_id__cancel_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{task_id}/screenshot": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Get PNG screenshot of the captured screen",
+        "description": "Serves the captured screen PNG (never inlined as base64 in TaskView).",
+        "operationId": "get_screenshot_api_tasks__task_id__screenshot_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PNG image of the captured screen",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "Screenshot not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Backend and M1 perception health status",
+        "description": "Returns status of backend and M1 components (tesseract, github_token, sandbox).",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionResult": {
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "title": "Action Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "denied",
+              "failed",
+              "timeout"
+            ],
+            "title": "Status"
+          },
+          "exit_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Code"
+          },
+          "stdout": {
+            "type": "string",
+            "title": "Stdout",
+            "default": ""
+          },
+          "stderr": {
+            "type": "string",
+            "title": "Stderr",
+            "default": ""
+          },
+          "denial_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Denial Reason"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action_id",
+          "status",
+          "duration_ms"
+        ],
+        "title": "ActionResult"
+      },
+      "Analysis": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "root_cause": {
+            "type": "string",
+            "title": "Root Cause"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "proposals": {
+            "items": {
+              "$ref": "#/components/schemas/Proposal"
+            },
+            "type": "array",
+            "title": "Proposals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "root_cause",
+          "explanation",
+          "confidence"
+        ],
+        "title": "Analysis"
+      },
+      "ContextRequest": {
+        "properties": {
+          "include_screen": {
+            "type": "boolean",
+            "title": "Include Screen",
+            "default": true
+          },
+          "include_terminal": {
+            "type": "boolean",
+            "title": "Include Terminal",
+            "default": true
+          },
+          "include_processes": {
+            "type": "boolean",
+            "title": "Include Processes",
+            "default": false
+          },
+          "github": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GithubTarget"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "ContextRequest"
+      },
+      "ContextSummary": {
+        "properties": {
+          "has_screenshot": {
+            "type": "boolean",
+            "title": "Has Screenshot"
+          },
+          "ocr_excerpt": {
+            "type": "string",
+            "title": "Ocr Excerpt"
+          },
+          "terminal_errors": {
+            "items": {
+              "$ref": "#/components/schemas/TerminalError"
+            },
+            "type": "array",
+            "title": "Terminal Errors"
+          },
+          "pr_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pr Title"
+          },
+          "pr_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pr Files"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "has_screenshot",
+          "ocr_excerpt"
+        ],
+        "title": "ContextSummary"
+      },
+      "CreateTaskRequest": {
+        "properties": {
+          "command": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Command"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ContextRequest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "command"
+        ],
+        "title": "CreateTaskRequest"
+      },
+      "DecisionRequest": {
+        "properties": {
+          "proposal_id": {
+            "type": "string",
+            "title": "Proposal Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "proposal_id",
+          "decision"
+        ],
+        "title": "DecisionRequest"
+      },
+      "GithubTarget": {
+        "properties": {
+          "repo": {
+            "type": "string",
+            "title": "Repo"
+          },
+          "pr_number": {
+            "type": "integer",
+            "title": "Pr Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "repo",
+          "pr_number"
+        ],
+        "title": "GithubTarget"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "backend": {
+            "type": "boolean",
+            "title": "Backend",
+            "default": true
+          },
+          "m1": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "M1"
+          }
+        },
+        "type": "object",
+        "title": "HealthResponse"
+      },
+      "PatchFile": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "unified_diff": {
+            "type": "string",
+            "title": "Unified Diff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "unified_diff"
+        ],
+        "title": "PatchFile"
+      },
+      "Proposal": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "risk": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Risk"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/PatchFile"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "commands": {
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Commands"
+          },
+          "policy_ok": {
+            "type": "boolean",
+            "title": "Policy Ok"
+          },
+          "policy_denial_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Denial Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "rationale",
+          "risk",
+          "policy_ok"
+        ],
+        "title": "Proposal"
+      },
+      "TaskCreatedResponse": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "title": "TaskCreatedResponse"
+      },
+      "TaskError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "title": "TaskError"
+      },
+      "TaskView": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "collecting_context",
+              "analyzing",
+              "awaiting_approval",
+              "executing",
+              "completed",
+              "rejected",
+              "failed",
+              "cancelled"
+            ],
+            "title": "State"
+          },
+          "command": {
+            "type": "string",
+            "title": "Command"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "analysis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Analysis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action_results": {
+            "items": {
+              "$ref": "#/components/schemas/ActionResult"
+            },
+            "type": "array",
+            "title": "Action Results"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "state",
+          "command",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TaskView"
+      },
+      "TerminalError": {
+        "properties": {
+          "exception_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exception Type"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "raw_excerpt": {
+            "type": "string",
+            "title": "Raw Excerpt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "raw_excerpt"
+        ],
+        "title": "TerminalError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
