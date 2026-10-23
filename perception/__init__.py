@@ -1,29 +1,59 @@
-"""perception - Public API contract for Member 1 perception module.
-
-Member 2 imports only these names:
-- collect_context
-- health
-- sandbox (ActionRequest, ActionResult, execute, validate_action)
+"""
+perception package
+Public API surface for Member 1 (Perception & Secure Sandbox).
 """
 
 import os
-from shared.schemas import ContextBundle, ContextRequest
-from perception.mock import collect_mock_context, health as mock_health
-from perception import sandbox
+from pathlib import Path
 
-__all__ = ["collect_context", "health", "sandbox"]
+from shared.schemas import ContextBundle, ContextRequest
+from perception.screen import is_tesseract_available
+from perception.github import is_github_configured
+from perception.sandbox import get_allowed_root
+from perception import sandbox
 
 
 def collect_context(req: ContextRequest) -> ContextBundle:
     """Collects system context (screen, terminal errors, processes, PR diffs).
     
-    Guarantees:
-    - Returns within 8s and never raises (returns partial results + warnings).
-    - All text redacted for secrets.
+    In MOCK_MODE (default during integration & UI testing), returns canned realistic bundle.
+    In LIVE mode, runs concurrent collection across screen OCR, terminal logs, and GitHub.
     """
-    return collect_mock_context(req)
+    if os.getenv("MOCK_MODE", "1") == "1":
+        from perception.mock import collect_context as mock_collect
+        return mock_collect(req)
+
+    from perception.collector import collect_context as real_collect
+    return real_collect(req)
 
 
 def health() -> dict[str, bool]:
-    """Returns component health status: {'tesseract': bool, 'github_token': bool, 'sandbox': bool}."""
-    return mock_health()
+    """
+    Returns health status of perception dependencies:
+    {'tesseract': True, 'github_token': True, 'sandbox': True}
+    """
+    if os.getenv("MOCK_MODE", "1") == "1":
+        from perception.mock import health as mock_health
+        return mock_health()
+
+    tesseract_ok = is_tesseract_available()
+    github_ok = is_github_configured()
+    sandbox_ok = False
+    try:
+        root_path = get_allowed_root()
+        sandbox_ok = root_path.exists() and root_path.is_dir()
+    except Exception:
+        sandbox_ok = False
+
+    return {
+        "tesseract": tesseract_ok,
+        "github_token": github_ok,
+        "sandbox": sandbox_ok,
+    }
+
+
+__all__ = [
+    "collect_context",
+    "health",
+    "sandbox",
+]

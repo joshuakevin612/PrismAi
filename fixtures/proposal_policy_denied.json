@@ -1,0 +1,12 @@
+{
+  "id": "prop_denied_1",
+  "title": "Clean cache directory using rm -rf",
+  "rationale": "Clear old artifacts to resolve build discrepancy",
+  "risk": "high",
+  "files": [],
+  "commands": [
+    ["rm", "-rf", "/"]
+  ],
+  "policy_ok": false,
+  "policy_denial_reason": "COMMAND_FORBIDDEN: rm"
+}

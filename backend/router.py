@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from shared.schemas import (
     CreateTaskRequest,
     DecisionRequest,
+    ErrorResponse,
     HealthResponse,
     TaskCreatedResponse,
     TaskView,
@@ -15,7 +16,16 @@ from shared.schemas import (
 from backend.task_manager import AppException, task_manager
 import perception
 
-router = APIRouter(prefix="/api", tags=["tasks"])
+ERROR_RESPONSES = {
+    400: {"model": ErrorResponse, "description": "Bad Request"},
+    404: {"model": ErrorResponse, "description": "Resource Not Found"},
+    409: {"model": ErrorResponse, "description": "Conflict or Invalid State"},
+    422: {"model": ErrorResponse, "description": "Validation Error or Policy Denied"},
+    500: {"model": ErrorResponse, "description": "Internal or Context Collection Error"},
+    502: {"model": ErrorResponse, "description": "Model Unavailable or Invalid Response"},
+}
+
+router = APIRouter(prefix="/api", tags=["tasks"], responses=ERROR_RESPONSES)
 
 
 @router.post(
@@ -77,6 +87,7 @@ async def cancel_task(task_id: str):
             "description": "PNG image of the captured screen",
         },
         404: {
+            "model": ErrorResponse,
             "description": "Screenshot not found",
         },
     },
