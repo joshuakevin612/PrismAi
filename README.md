@@ -15,22 +15,21 @@ A local developer assistant that selects relevant context, diagnoses issues with
 git clone https://github.com/joshuakevin612/PrismAi.git
 cd PrismAi
 python -m venv .venv
-.venv/Scripts/python.exe -m pip install --require-hashes -r requirements-bootstrap.lock
-.venv/Scripts/python.exe -m pip install --require-hashes -r requirements.lock
+.venv/Scripts/python.exe -m pip install --require-hashes -r requirements.txt
 npm ci --prefix frontend
 npm run build --prefix frontend
 ```
 
 Only `.env.example` is included. Copy it to a private `.env` if you do not already have one, set `NVIDIA_API_KEY`, and replace the `APPROVAL_SECRET` placeholder with a private random value. Generate one locally with `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Never commit the real `.env` or put credentials under `ALLOWED_ROOT`.
 
-For the default example workspace:
+For the default private workspace:
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-New-Item -ItemType Directory -Force demo-workspace
+New-Item -ItemType Directory -Force workspace
 ```
 
-Edit `.env` before continuing. Keep `ALLOWED_ROOT=./demo-workspace`, or set it to an existing credential-free project directory. To create the optional bug-reproduction example, run `.venv/Scripts/python.exe scripts/prepare-demo.py` after configuration.
+Edit `.env` before continuing. Keep `ALLOWED_ROOT=./workspace`, or set it to an existing credential-free project directory.
 
 ```powershell
 docker build -t prism-sandbox:local sandbox
@@ -40,7 +39,7 @@ docker build -t prism-sandbox:local sandbox
 
 The launcher opens the built UI on `http://127.0.0.1:8000` through a private pairing link. The frontend and API share one origin. A new process normally needs fresh browser pairing. Keep one backend process running; do not expose it to the network.
 
-On Linux, use `.venv/bin/python` in place of `.venv/Scripts/python.exe`, `cp` in place of `Copy-Item`, and `mkdir -p demo-workspace` in place of `New-Item`.
+On Linux, use `.venv/bin/python` in place of `.venv/Scripts/python.exe`, `cp` in place of `Copy-Item`, and `mkdir -p workspace` in place of `New-Item`.
 
 ## Frontend development
 
@@ -55,7 +54,7 @@ NVIDIA receives the selected redacted text; attached PRs use GitHub's API. Scree
 ## Checks
 
 ```powershell
-.venv/Scripts/python.exe -m pip install --require-hashes -r requirements-tools.lock
+.venv/Scripts/python.exe -m pip install --require-hashes -r config/requirements/tools.lock
 .venv/Scripts/python.exe scripts/check.py --docker --security
 ```
 
@@ -63,4 +62,16 @@ Add `--ocr` when Tesseract is installed. Checks start their own isolated authent
 
 The repository includes only application source/assets, locked setup/build inputs, example configuration, required tests/fixtures, dependency notices, and CI/release tooling. Generated builds, virtual environments, installed packages, local state, screenshots, audit evidence, reference checkouts, and real credentials are excluded.
 
-See [setup details](docs/LIVE_SETUP.md), [API contract](docs/INTEGRATION_CONTRACT.md), [release/rollback instructions](docs/RELEASING.md), and [perception integration](docs/MEMBER_1_INTEGRATION.md).
+See the [API contract](docs/API.md), [release/rollback instructions](docs/RELEASING.md), and [runbook](docs/RUNBOOK.md).
+
+## Repository layout
+
+- `backend/`, `perception/`, `shared/`: the local API, context collectors, and shared contracts.
+- `frontend/`: UI source, fonts, sprites, and build inputs.
+- `sandbox/`: the isolated command runtime.
+- `config/requirements/`: pinned dependency locks and maintenance inputs.
+- `scripts/`: launch, diagnostics, validation, and local release commands.
+- `tests/`: regression tests and their JSON fixtures.
+- `docs/`: privacy, API, release/recovery guidance, and dependency notices.
+
+`main` is the only maintained branch. Automatic dependency-update PRs are disabled; dependency and image advisory checks still run in CI. Update locks deliberately and verify them before pushing.

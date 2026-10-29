@@ -6,11 +6,11 @@ import formats from 'ajv-formats';
 const base=(process.env.API_BASE_URL||'http://localhost:8000/api').replace(/\/$/,'');
 assert(process.env.API_SESSION_TOKEN,'Set API_SESSION_TOKEN for this paired backend; use scripts/check.py for an isolated contract run.');
 const authorization={Authorization:`Bearer ${process.env.API_SESSION_TOKEN}`};
-const spec=JSON.parse(readFileSync(new URL('../../fixtures/openapi.json',import.meta.url)));
+const spec=JSON.parse(readFileSync(new URL('../../tests/fixtures/openapi.json',import.meta.url)));
 const ajv=new Ajv({strict:false});formats(ajv);
 ajv.addSchema({$id:'contract',components:spec.components});
 const validators=Object.fromEntries(['TaskView','TaskCreatedResponse','HealthResponse','AccessSettings'].map(n=>[n,ajv.compile({$ref:`contract#/components/schemas/${n}`})]));
-validators.ErrorEnvelope=ajv.compile(JSON.parse(readFileSync(new URL('../../fixtures/error-response.schema.json',import.meta.url))));
+validators.ErrorEnvelope=ajv.compile(JSON.parse(readFileSync(new URL('../../tests/fixtures/error-response.schema.json',import.meta.url))));
 function shape(name,value){assert(validators[name](value),`${name}: ${ajv.errorsText(validators[name].errors)}`);}
 async function call(path,body,expected){const res=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{...authorization,...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(12000)});const raw=await res.text();let data;try{data=raw?JSON.parse(raw):undefined;}catch{assert.fail(`${path}: non-JSON HTTP ${res.status}`);}if(expected)assert(expected.includes(res.status),`${path}: expected ${expected}, got ${res.status}`);if(!res.ok)shape('ErrorEnvelope',data);return {res,data};}
 const terminal=new Set(['completed','rejected','failed','cancelled']);

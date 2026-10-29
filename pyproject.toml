@@ -6,3 +6,9 @@ include = ["backend/**/*.py", "perception/**/*.py", "shared/**/*.py", "scripts/*
 # Syntax errors, undefined names, and invalid control flow: fail on bugs without
 # imposing a style rewrite on the integrated project.
 select = ["E9", "F63", "F7", "F82"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["frontend", ".venv", ".git", ".prism"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

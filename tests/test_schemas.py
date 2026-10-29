@@ -6,7 +6,7 @@ from shared.schemas import ContextBundle, TaskView
 
 
 def test_successful_task_fixture():
-    fixture_path = Path("fixtures/successful_task.json")
+    fixture_path = Path("tests/fixtures/successful_task.json")
     with open(fixture_path, encoding="utf-8") as f:
         data = json.load(f)
 
@@ -20,7 +20,7 @@ def test_successful_task_fixture():
 
 
 def test_failed_task_fixture():
-    fixture_path = Path("fixtures/failed_task.json")
+    fixture_path = Path("tests/fixtures/failed_task.json")
     with open(fixture_path, encoding="utf-8") as f:
         data = json.load(f)
 
@@ -32,7 +32,7 @@ def test_failed_task_fixture():
 
 
 def test_policy_denied_fixture():
-    fixture_path = Path("fixtures/policy_denied_proposal.json")
+    fixture_path = Path("tests/fixtures/policy_denied_proposal.json")
     with open(fixture_path, encoding="utf-8") as f:
         data = json.load(f)
 
@@ -44,7 +44,7 @@ def test_policy_denied_fixture():
 
 
 def test_model_invalid_response_fixture():
-    fixture_path = Path("fixtures/model_invalid_response.json")
+    fixture_path = Path("tests/fixtures/model_invalid_response.json")
     with open(fixture_path, encoding="utf-8") as f:
         data = json.load(f)
 
@@ -56,7 +56,7 @@ def test_model_invalid_response_fixture():
 
 
 def test_empty_context_with_warnings_fixture():
-    fixture_path = Path("fixtures/empty_context_with_warnings.json")
+    fixture_path = Path("tests/fixtures/empty_context_with_warnings.json")
     with open(fixture_path, encoding="utf-8") as f:
         data = json.load(f)
 

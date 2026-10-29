@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Security & Sandbox
     APPROVAL_SECRET: str = Field(default_factory=lambda: secrets.token_urlsafe(48))
-    ALLOWED_ROOT: str = "./demo-workspace"
+    ALLOWED_ROOT: str = "./workspace"
     API_SESSION_TOKEN: str = Field(default_factory=lambda: secrets.token_urlsafe(48), min_length=32, repr=False)
     SANDBOX_IMAGE: str = "prism-sandbox:local"
     ACTION_TIMEOUT_SECONDS: float = 30

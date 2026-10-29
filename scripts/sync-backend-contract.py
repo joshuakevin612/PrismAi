@@ -10,6 +10,5 @@ from backend.main import app
 from shared.schemas import ErrorResponse
 
 for name, value in [('openapi.json', app.openapi()), ('error-response.schema.json', ErrorResponse.model_json_schema())]:
-    (root / 'fixtures' / name).write_text(json.dumps(value, indent=2) + '\n', encoding='utf-8')
-(root / 'openapi.json').write_text(json.dumps(app.openapi(), indent=2) + '\n', encoding='utf-8')
+    (root / 'tests' / 'fixtures' / name).write_text(json.dumps(value, indent=2) + '\n', encoding='utf-8')
 print('Synced OpenAPI and error envelope directly from Member 2 Python models.')

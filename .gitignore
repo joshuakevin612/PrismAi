@@ -48,3 +48,6 @@ demo-workspace/
 *.pfx
 .ssh/
 .aws/
+
+# Private working project (not application source)
+workspace/

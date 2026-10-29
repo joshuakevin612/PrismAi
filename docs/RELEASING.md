@@ -4,12 +4,12 @@ The release unit is an application ZIP plus the matching Linux sandbox image. Bu
 
 ## Prepare and check
 
-Use Python 3.11 and Node 22. The complete application dependency graph is in `requirements.lock`; bootstrap and developer-tool graphs have their own hash locks. `requirements.txt`, `requirements-bootstrap.in`, `requirements-tools.in`, and `sandbox/requirements.in` are resolution inputs, not installation locks.
+Use Python 3.11 and Node 22. The complete application dependency graph is in `config/requirements/runtime.lock`; bootstrap and developer-tool graphs have their own hash locks. `config/requirements/runtime.in`, `config/requirements/bootstrap.in`, `config/requirements/tools.in`, and `sandbox/requirements.in` are resolution inputs, not installation locks.
 
 ```powershell
 python -m venv .venv
-.venv/Scripts/python.exe -m pip install --require-hashes -r requirements-bootstrap.lock
-.venv/Scripts/python.exe -m pip install --require-hashes -r requirements.lock -r requirements-tools.lock
+.venv/Scripts/python.exe -m pip install --require-hashes -r config/requirements/bootstrap.lock
+.venv/Scripts/python.exe -m pip install --require-hashes -r config/requirements/runtime.lock -r config/requirements/tools.lock
 npm ci --prefix frontend
 docker build -t prism-sandbox:local sandbox
 .venv/Scripts/python.exe scripts/check.py --docker --security
@@ -50,7 +50,7 @@ python scripts/release.py activate 1.0.0-rc.1 --home .prism/installed
 python scripts/release.py run --home .prism/installed
 ```
 
-On first install, configure `.prism/installed/config.env` privately with the real NVIDIA key/model and an explicit credential-free workspace. An initial example workspace and random approval secret are generated; existing config is preserved. `STATE_DIR` is outside version folders. API pairing credentials are generated per process and never saved by the installer. Installed releases select the recorded sandbox image ID; a rebuilt mutable tag cannot silently replace that image.
+On first install, configure `.prism/installed/config.env` privately with the real NVIDIA key/model and an explicit credential-free workspace. An empty private workspace and random approval secret are generated; existing config is preserved. `STATE_DIR` is outside version folders. API pairing credentials are generated per process and never saved by the installer. Installed releases select the recorded sandbox image ID; a rebuilt mutable tag cannot silently replace that image.
 
 Installation refuses archive traversal, duplicate entries, links, Windows device/path aliases, oversized archives, and incorrect file hashes. It refuses to overwrite an existing version. A failed dependency install leaves an unactivated folder for diagnosis. Remove only that explicitly identified failed version when retrying; never recursively clean the installation home or workspace as a troubleshooting shortcut.
 
@@ -70,12 +70,12 @@ Rollback verifies the previous version and atomically switches `current.json`, p
 
 ## Updating locks
 
-Use the pinned uv from `requirements-tools.lock`:
+Use the pinned uv from `config/requirements/tools.lock`:
 
 ```powershell
-uv pip compile requirements.txt --universal --python-version 3.11 --generate-hashes -o requirements.lock
-uv pip compile requirements-bootstrap.in --universal --python-version 3.11 --generate-hashes -o requirements-bootstrap.lock
-uv pip compile requirements-tools.in --universal --python-version 3.11 --generate-hashes -o requirements-tools.lock
+uv pip compile config/requirements/runtime.in --universal --python-version 3.11 --generate-hashes -o config/requirements/runtime.lock
+uv pip compile config/requirements/bootstrap.in --universal --python-version 3.11 --generate-hashes -o config/requirements/bootstrap.lock
+uv pip compile config/requirements/tools.in --universal --python-version 3.11 --generate-hashes -o config/requirements/tools.lock
 uv pip compile sandbox/requirements.in --universal --python-version 3.11 --generate-hashes -o sandbox/requirements.lock
 ```
 

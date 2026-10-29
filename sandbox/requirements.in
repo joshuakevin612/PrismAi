@@ -1,2 +1,2 @@
--r ../requirements-bootstrap.in
+-r ../config/requirements/bootstrap.in
 pytest==9.2.0

@@ -41,12 +41,12 @@ def safe_name(name):
 
 def source_files(root):
     files = []
-    for directory in ('backend','perception','shared','scripts','demo-template'):
+    for directory in ('backend','perception','shared','scripts'):
         files.extend(p for p in (root/directory).rglob('*.py') if '__pycache__' not in p.parts)
     files.extend((root/'docs').glob('*.md'))
     files.extend(p for p in (root/'frontend/dist').rglob('*') if p.is_file())
-    files.extend(root/p for p in ['README.md','PRODUCT.md','.env.example','requirements.txt',
-        'requirements.lock','requirements-bootstrap.lock','sandbox/Dockerfile','sandbox/requirements.lock','sandbox/.dockerignore','sandbox/patch_npm.py',
+    files.extend(root/p for p in ['README.md','.env.example','requirements.txt',
+        'config/requirements/bootstrap.lock','config/requirements/runtime.lock','sandbox/Dockerfile','sandbox/requirements.lock','sandbox/.dockerignore','sandbox/patch_npm.py',
         'frontend/package.json','frontend/package-lock.json','frontend/THIRD_PARTY_NOTICES.txt',
         'docs/THIRD_PARTY_PYTHON_NOTICES.txt'])
     result = {}
@@ -114,7 +114,7 @@ def create_environment(release):
     if sys.version_info[:2] != (3,11):
         raise ValueError('Install releases with Python 3.11')
     venv.EnvBuilder(with_pip=True).create(release/'.venv')
-    for lock in ['requirements-bootstrap.lock','requirements.lock']:
+    for lock in ['config/requirements/bootstrap.lock','requirements.txt']:
         subprocess.run([str(python_path(release)),'-m','pip','install','--disable-pip-version-check',
             '--require-hashes','-r',str(release/lock)],check=True)
 
@@ -135,7 +135,7 @@ def install(archive_path, home):
     config = home/'config.env'
     if not config.exists():
         workspace = home/'workspace'
-        shutil.copytree(target/'demo-template',workspace,dirs_exist_ok=False)
+        workspace.mkdir(parents=True,exist_ok=True)
         example = (target/'.env.example').read_text(encoding='utf-8')
         example = re.sub(r'^ALLOWED_ROOT=.*$', 'ALLOWED_ROOT='+workspace.as_posix(), example, flags=re.M)
         example = re.sub(r'^APPROVAL_SECRET=.*$', 'APPROVAL_SECRET='+secrets.token_urlsafe(48), example, flags=re.M)

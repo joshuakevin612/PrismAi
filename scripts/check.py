@@ -90,7 +90,7 @@ def main():
     run([npm,'test','--prefix','frontend'])
     run([npm,'run','build','--prefix','frontend'])
     from backend.main import app
-    for name in ['openapi.json','fixtures/openapi.json']:
+    for name in ['tests/fixtures/openapi.json']:
         if json.loads((ROOT/name).read_text()) != app.openapi():
             raise RuntimeError('Regenerate contract snapshots: python scripts/sync-backend-contract.py')
     run([tools,'-c',"import pathlib,yaml; [yaml.safe_load(p.read_text()) for p in pathlib.Path('.github').rglob('*.yml')]"])

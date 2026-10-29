@@ -12,8 +12,7 @@ def archives(tmp_path, monkeypatch):
     source = tmp_path/'source'
     source.mkdir()
     files = {'backend/main.py':b'# synthetic release\n', 'frontend/dist/index.html':b'<html>unchanged UI</html>',
-        '.env.example':b'ALLOWED_ROOT=./demo-workspace\nAPPROVAL_SECRET=replace-with-a-random-local-secret\nNVIDIA_API_KEY=\n',
-        'demo-template/app.py':b'print("fixture")\n'}
+        '.env.example':b'ALLOWED_ROOT=./demo-workspace\nAPPROVAL_SECRET=replace-with-a-random-local-secret\nNVIDIA_API_KEY=\n'}
     monkeypatch.setattr(release,'source_files',lambda root:files)
     def runtime(target):
         python = release.python_path(target)

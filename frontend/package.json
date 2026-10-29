@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "build": "tsc -b && vite build",
-    "generate:types": "openapi-typescript ../fixtures/openapi.json -o src/api/types.ts",
+    "generate:types": "openapi-typescript ../tests/fixtures/openapi.json -o src/api/types.ts",
     "generate:types:live": "openapi-typescript http://127.0.0.1:8000/openapi.json -o src/api/types.ts",
     "test": "node --test scripts/*.test.mjs",
     "test:contract": "node scripts/contract.mjs",
