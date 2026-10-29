@@ -2,6 +2,7 @@ import type { components } from './types';
 export type Task = components['schemas']['TaskView'];
 export type CreateRequest = components['schemas']['CreateTaskRequest'];
 export type Decision = components['schemas']['DecisionRequest'];
+export type Health = components['schemas']['HealthResponse'];
 export const terminalStates = new Set<Task['state']>(['completed','rejected','failed','cancelled']);
 export class ApiError extends Error {
   constructor(public code: string, message: string, public retryable: boolean) {super(message);}
@@ -20,4 +21,4 @@ export async function request<T>(path:string, body?:unknown, signal?:AbortSignal
   }
   return data as T;
 }
-export const liveApi={create:(body:CreateRequest)=>request<{task_id:string}>('/tasks',body),get:(id:string,signal?:AbortSignal)=>request<Task>(`/tasks/${encodeURIComponent(id)}`,undefined,signal),decision:(id:string,body:Decision)=>request<unknown>(`/tasks/${encodeURIComponent(id)}/decision`,body),cancel:(id:string)=>request<unknown>(`/tasks/${encodeURIComponent(id)}/cancel`,{}),health:()=>request<unknown>('/health')};
+export const liveApi={create:(body:CreateRequest)=>request<{task_id:string}>('/tasks',body),get:(id:string,signal?:AbortSignal)=>request<Task>(`/tasks/${encodeURIComponent(id)}`,undefined,signal),decision:(id:string,body:Decision)=>request<unknown>(`/tasks/${encodeURIComponent(id)}/decision`,body),cancel:(id:string)=>request<unknown>(`/tasks/${encodeURIComponent(id)}/cancel`,{}),health:()=>request<Health>('/health')};

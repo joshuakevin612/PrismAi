@@ -1,68 +1,66 @@
-# PrismAi
+# Prism
 
-An approval-gated developer assistant. Member 1 owns perception and sandbox execution, Member 2 owns the backend orchestrator and shared schemas, and Member 3 owns the frontend and endpoint contract checks.
+A local developer assistant that selects relevant context, diagnoses issues with NVIDIA Nemotron, and proposes exact patches and Docker commands for your approval.
 
-This branch adds Member 3's frontend to Member 2's backend at commit `70f7d3d`. The current perception and sandbox modules simulate collection/execution. Real model and sandbox integration remain team checkpoints.
+## Prerequisites
 
-## Local setup
+- Python 3.11 and Node.js 22.
+- Docker Desktop using Linux containers (Windows), or Docker Engine (Linux).
+- An NVIDIA API key and access to the configured model.
+- Optional: Tesseract for screen text recognition.
 
-Requires Python 3.11+ and Node.js 22.12+.
+## Setup
 
 ```powershell
+git clone https://github.com/joshuakevin612/PrismAi.git
+cd PrismAi
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv/Scripts/python.exe -m pip install --require-hashes -r requirements-bootstrap.lock
+.venv/Scripts/python.exe -m pip install --require-hashes -r requirements.lock
 npm ci --prefix frontend
-```
-
-Start the backend from the repository root:
-
-```powershell
-$env:MOCK_MODE='1'
-.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
-```
-
-In another terminal:
-
-```powershell
-npm run dev --prefix frontend
-```
-
-Open http://127.0.0.1:5173. Demo mode starts enabled and uses an independent in-browser simulation. Turn it off to connect to the backend through Vite's `/api` proxy. The backend mock also simulates perception and execution; switching off browser Demo mode does not enable real hardware or real execution.
-
-Public frontend defaults are documented in `frontend/.env.example`. Backend configuration is documented in the root `.env.example`; backend secrets must never use the `VITE_` prefix.
-
-## Verification
-
-With an idle backend running in mock mode:
-
-```powershell
-$env:API_BASE_URL='http://127.0.0.1:8000/api'
-npm run test:integration --prefix frontend
-npm test --prefix frontend
 npm run build --prefix frontend
-$env:MOCK_MODE='1'
-.\.venv\Scripts\python.exe -m pytest -q
 ```
 
-The frontend's eight tests cover fixture schemas, request failures, and mock state/approval behavior. The integration runner exercises all six endpoint routes, response shapes, concurrency, rejection, cancellation, policy denial, model/context failure drills, and PNG screenshots. It does not approve an allowed proposal. Member 2's 21 backend tests cover the simulated approval/execution path as well.
+Only `.env.example` is included. Copy it to a private `.env` if you do not already have one, set `NVIDIA_API_KEY`, and replace the `APPROVAL_SECRET` placeholder with a private random value. Generate one locally with `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Never commit the real `.env` or put credentials under `ALLOWED_ROOT`.
 
-For an API-compatible backend without M2's mock drill commands, use `npm run test:contract --prefix frontend`. Real collection, sandbox execution, cancellation of real child processes, and hardware/security drills still need joint verification.
-
-## Shared types
-
-`shared/schemas.py` remains owned by Member 2. TypeScript models are generated, not maintained by hand:
+For the default example workspace:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/sync-backend-contract.py
-npm run generate:types --prefix frontend
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+New-Item -ItemType Directory -Force demo-workspace
 ```
 
-The sync helper exports `fixtures/openapi.json` from FastAPI and `fixtures/error-response.schema.json` from the Python ErrorResponse model. The latter is separate because the backend currently omits it from route OpenAPI response declarations. With a backend running, `npm run generate:types:live --prefix frontend` generates TypeScript directly from `/openapi.json`.
+Edit `.env` before continuing. Keep `ALLOWED_ROOT=./demo-workspace`, or set it to an existing credential-free project directory. To create the optional bug-reproduction example, run `.venv/Scripts/python.exe scripts/prepare-demo.py` after configuration.
 
-## Team handoffs
+```powershell
+docker build -t prism-sandbox:local sandbox
+.venv/Scripts/python.exe scripts/doctor.py
+.venv/Scripts/python.exe scripts/run_backend.py
+```
 
-- [Member 2: setup, API checks, schema workflow, and remaining backend integration](HANDOFF_MEMBER_2.md)
-- [Member 1: perception/sandbox requirements, interoperability, and security demo cases](HANDOFF_MEMBER_1.md)
-- [Original Member 2 backend documentation](docs/BACKEND_README.md)
+The launcher opens the built UI on `http://127.0.0.1:8000` through a private pairing link. The frontend and API share one origin. A new process normally needs fresh browser pairing. Keep one backend process running; do not expose it to the network.
 
-Member 3's UI includes context selection, analysis and warning displays, screenshot retrieval, exact diff/argv review, policy-based approval controls, rejection/cancellation, and action output. Task history is limited to the current page session. API errors have explicit retry controls, and polling stops on terminal states.
+On Linux, use `.venv/bin/python` in place of `.venv/Scripts/python.exe`, `cp` in place of `Copy-Item`, and `mkdir -p demo-workspace` in place of `New-Item`.
+
+## Frontend development
+
+Run `npm run dev --prefix frontend` in one terminal and `.venv/Scripts/python.exe scripts/run_backend.py --dev` in another. Use the default backend address `127.0.0.1:8000`; the launcher pairs the same-host Vite frontend on port 5173. The UI source, fonts, sprites, and interactions are preserved.
+
+## Permissions and privacy
+
+Every proposed action needs approval. File modification, dependency installation, and command networking ask first by default. Screen, terminal, and process sources are initially available automatically; switches revoke automatic access. Saved access settings remain authoritative. Credentials and known sensitive-file paths cannot be collected or patched; command mounts reject known credential files, links, and unsafe roots. Arbitrary approved programs with a write/network grant have broad capabilities inside the allowed workspace.
+
+NVIDIA receives the selected redacted text; attached PRs use GitHub's API. Screenshots remain local and their pixels are not redacted. Command-network permission is separate from these configured APIs. See [privacy and retention](docs/PRIVACY.md) and the [runbook](docs/RUNBOOK.md).
+
+## Checks
+
+```powershell
+.venv/Scripts/python.exe -m pip install --require-hashes -r requirements-tools.lock
+.venv/Scripts/python.exe scripts/check.py --docker --security
+```
+
+Add `--ocr` when Tesseract is installed. Checks start their own isolated authenticated backend and send no real workstation context or live model requests. The optional `scripts/model_smoke.py` uses synthetic text to verify the real provider and may consume provider quota.
+
+The repository includes only application source/assets, locked setup/build inputs, example configuration, required tests/fixtures, dependency notices, and CI/release tooling. Generated builds, virtual environments, installed packages, local state, screenshots, audit evidence, reference checkouts, and real credentials are excluded.
+
+See [setup details](docs/LIVE_SETUP.md), [API contract](docs/INTEGRATION_CONTRACT.md), [release/rollback instructions](docs/RELEASING.md), and [perception integration](docs/MEMBER_1_INTEGRATION.md).

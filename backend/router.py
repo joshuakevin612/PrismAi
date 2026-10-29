@@ -1,6 +1,7 @@
 """backend/router.py - FastAPI routes implementing the M2 <-> M3 REST contract."""
 
 import os
+import asyncio
 from pathlib import Path
 from fastapi import APIRouter, Response, status
 from fastapi.responses import FileResponse, JSONResponse
@@ -8,24 +9,17 @@ from fastapi.responses import FileResponse, JSONResponse
 from shared.schemas import (
     CreateTaskRequest,
     DecisionRequest,
-    ErrorResponse,
     HealthResponse,
     TaskCreatedResponse,
     TaskView,
+    ErrorResponse,
 )
 from backend.task_manager import AppException, task_manager
 import perception
 
-ERROR_RESPONSES = {
-    400: {"model": ErrorResponse, "description": "Bad Request"},
-    404: {"model": ErrorResponse, "description": "Resource Not Found"},
-    409: {"model": ErrorResponse, "description": "Conflict or Invalid State"},
-    422: {"model": ErrorResponse, "description": "Validation Error or Policy Denied"},
-    500: {"model": ErrorResponse, "description": "Internal or Context Collection Error"},
-    502: {"model": ErrorResponse, "description": "Model Unavailable or Invalid Response"},
-}
-
-router = APIRouter(prefix="/api", tags=["tasks"], responses=ERROR_RESPONSES)
+router = APIRouter(prefix="/api", tags=["tasks"], responses={
+    status: {"model": ErrorResponse} for status in [404, 409, 422, 500, 502]
+})
 
 
 @router.post(
@@ -112,9 +106,27 @@ async def get_screenshot(task_id: str):
 )
 async def health():
     """Returns status of backend and M1 components (tesseract, github_token, sandbox)."""
-    m1_health = perception.health()
+    m1_health = await asyncio.to_thread(perception.health)
+    from backend.config import settings
+    m1_health['model_configured'] = bool(settings.NVIDIA_API_KEY.strip())
     return HealthResponse(
         schema_version="1.0",
         backend=True,
         m1=m1_health,
     )
+
+
+from shared.schemas import AccessSettings, AccessUpdate, PermissionDecision
+from backend.permissions import permission_store
+
+@router.get('/access', response_model=AccessSettings)
+async def get_access():
+    return permission_store.settings
+
+@router.post('/access', response_model=AccessSettings)
+async def update_access(req: AccessUpdate):
+    return await task_manager.update_access(req.capability, req.allowed)
+
+@router.post('/tasks/{task_id}/permissions/{request_id}', response_model=TaskView)
+async def permission_decision(task_id: str, request_id: str, req: PermissionDecision):
+    return await task_manager.handle_permission(task_id, request_id, req.decision)

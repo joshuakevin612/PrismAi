@@ -1,0 +1,4 @@
+*
+!Dockerfile
+!requirements.lock
+!patch_npm.py

@@ -35,12 +35,52 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -78,15 +118,55 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "404": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
           }
         }
       }
@@ -131,15 +211,55 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "404": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
           }
         }
       }
@@ -174,15 +294,55 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "404": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
           }
         }
       }
@@ -217,17 +377,54 @@
             }
           },
           "404": {
-            "description": "Screenshot not found"
-          },
-          "422": {
-            "description": "Validation Error",
+            "description": "Screenshot not found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
           }
         }
       }
@@ -250,6 +447,307 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/access": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Get Access",
+        "operationId": "get_access_api_access_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessSettings"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Update Access",
+        "operationId": "update_access_api_access_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessSettings"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{task_id}/permissions/{request_id}": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Permission Decision",
+        "operationId": "permission_decision_api_tasks__task_id__permissions__request_id__post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PermissionDecision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
           }
         }
       }
@@ -257,6 +755,68 @@
   },
   "components": {
     "schemas": {
+      "AccessSettings": {
+        "properties": {
+          "screen": {
+            "type": "boolean",
+            "title": "Screen",
+            "default": true
+          },
+          "terminal": {
+            "type": "boolean",
+            "title": "Terminal",
+            "default": true
+          },
+          "processes": {
+            "type": "boolean",
+            "title": "Processes",
+            "default": true
+          },
+          "modify_files": {
+            "type": "boolean",
+            "title": "Modify Files",
+            "default": false
+          },
+          "install_dependencies": {
+            "type": "boolean",
+            "title": "Install Dependencies",
+            "default": false
+          },
+          "network": {
+            "type": "boolean",
+            "title": "Network",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "AccessSettings"
+      },
+      "AccessUpdate": {
+        "properties": {
+          "capability": {
+            "type": "string",
+            "enum": [
+              "screen",
+              "terminal",
+              "processes",
+              "modify_files",
+              "install_dependencies",
+              "network"
+            ],
+            "title": "Capability"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "capability",
+          "allowed"
+        ],
+        "title": "AccessUpdate"
+      },
       "ActionResult": {
         "properties": {
           "action_id": {
@@ -344,6 +904,23 @@
             },
             "type": "array",
             "title": "Proposals"
+          },
+          "needed_context": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "screen",
+                "terminal",
+                "processes"
+              ]
+            },
+            "type": "array",
+            "title": "Needed Context"
+          },
+          "context_reason": {
+            "type": "string",
+            "title": "Context Reason",
+            "default": ""
           }
         },
         "type": "object",
@@ -357,6 +934,11 @@
       },
       "ContextRequest": {
         "properties": {
+          "auto": {
+            "type": "boolean",
+            "title": "Auto",
+            "default": true
+          },
           "include_screen": {
             "type": "boolean",
             "title": "Include Screen",
@@ -487,6 +1069,41 @@
         ],
         "title": "DecisionRequest"
       },
+      "ErrorDetail": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "title": "ErrorDetail"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse"
+      },
       "GithubTarget": {
         "properties": {
           "repo": {
@@ -504,19 +1121,6 @@
           "pr_number"
         ],
         "title": "GithubTarget"
-      },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
       },
       "HealthResponse": {
         "properties": {
@@ -558,6 +1162,98 @@
           "unified_diff"
         ],
         "title": "PatchFile"
+      },
+      "PermissionDecision": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "allow",
+              "deny"
+            ],
+            "title": "Decision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "PermissionDecision"
+      },
+      "PermissionRequest": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "capabilities": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "screen",
+                "terminal",
+                "processes",
+                "modify_files",
+                "install_dependencies",
+                "network"
+              ]
+            },
+            "type": "array",
+            "title": "Capabilities"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "context",
+              "execution"
+            ],
+            "title": "Phase"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "allowed",
+              "denied",
+              "cancelled"
+            ],
+            "title": "Status",
+            "default": "pending"
+          },
+          "proposal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposal Id"
+          },
+          "commands": {
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Commands"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "capabilities",
+          "reason",
+          "phase"
+        ],
+        "title": "PermissionRequest"
       },
       "Proposal": {
         "properties": {
@@ -613,6 +1309,26 @@
               }
             ],
             "title": "Policy Denial Reason"
+          },
+          "required_permissions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "screen",
+                "terminal",
+                "processes",
+                "modify_files",
+                "install_dependencies",
+                "network"
+              ]
+            },
+            "type": "array",
+            "title": "Required Permissions"
+          },
+          "requires_network": {
+            "type": "boolean",
+            "title": "Requires Network",
+            "default": false
           }
         },
         "type": "object",
@@ -681,6 +1397,8 @@
             "type": "string",
             "enum": [
               "queued",
+              "planning_context",
+              "awaiting_permission",
               "collecting_context",
               "analyzing",
               "awaiting_approval",
@@ -742,6 +1460,46 @@
                 "type": "null"
               }
             ]
+          },
+          "selected_sources": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "screen",
+                "terminal",
+                "processes",
+                "modify_files",
+                "install_dependencies",
+                "network"
+              ]
+            },
+            "type": "array",
+            "title": "Selected Sources"
+          },
+          "permission_requests": {
+            "items": {
+              "$ref": "#/components/schemas/PermissionRequest"
+            },
+            "type": "array",
+            "title": "Permission Requests"
+          },
+          "task_grants": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "screen",
+                "terminal",
+                "processes",
+                "modify_files",
+                "install_dependencies",
+                "network"
+              ]
+            },
+            "type": "array",
+            "title": "Task Grants"
+          },
+          "access": {
+            "$ref": "#/components/schemas/AccessSettings"
           }
         },
         "type": "object",
@@ -804,47 +1562,26 @@
           "raw_excerpt"
         ],
         "title": "TerminalError"
+      }
+    },
+    "securitySchemes": {
+      "LocalSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "prism_session"
       },
-      "ValidationError": {
-        "properties": {
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Location"
-          },
-          "msg": {
-            "type": "string",
-            "title": "Message"
-          },
-          "type": {
-            "type": "string",
-            "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
-          }
-        },
-        "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
-        "title": "ValidationError"
+      "LocalBearer": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
-  }
+  },
+  "security": [
+    {
+      "LocalSession": []
+    },
+    {
+      "LocalBearer": []
+    }
+  ]
 }

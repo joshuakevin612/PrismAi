@@ -1,0 +1,52 @@
+name: Integration contract
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: python -m pip install --require-hashes -r requirements-bootstrap.lock
+      - run: python -m pip install --require-hashes -r requirements.lock -r requirements-tools.lock
+      - run: npm ci --prefix frontend
+      - name: Build isolated command image
+        run: docker build -t prism-sandbox:local sandbox
+      - name: Install OCR for hardware-independent verification
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr fonts-dejavu-core
+      - name: Verify release and security boundaries
+        run: python scripts/check.py --docker --ocr --security
+      - name: Scan sandbox OS and packages
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock anchore/grype@sha256:621d56d1d68106b787022c81546f7e0a36202a25d1239f0c20195fab8c16f7ea prism-sandbox:local --fail-on high --only-fixed
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: prism-diagnostics
+          path: .prism/logs/
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: python -m pip install --require-hashes -r requirements-bootstrap.lock
+      - run: python -m pip install --require-hashes -r requirements.lock -r requirements-tools.lock
+      - run: npm ci --prefix frontend
+      - run: python scripts/check.py --security

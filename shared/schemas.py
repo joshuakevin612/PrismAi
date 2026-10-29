@@ -1,6 +1,6 @@
 """shared/schemas.py - Single source of truth for M1, M2, and M3 contracts.
 
-Owned by Member 2. Any change goes through a PR that all three approve.
+Shared by perception, orchestration, and frontend. Regenerate OpenAPI and frontend types together.
 Every top-level contract has schema_version: "1.0".
 """
 
@@ -21,6 +21,7 @@ class GithubTarget(BaseModel):
 
 
 class ContextRequest(BaseModel):
+    auto: bool = True
     include_screen: bool = True
     include_terminal: bool = True
     include_processes: bool = False
@@ -91,6 +92,43 @@ class PatchFile(BaseModel):
     unified_diff: str
 
 
+Capability = Literal['screen', 'terminal', 'processes', 'modify_files', 'install_dependencies', 'network']
+
+
+class AccessSettings(BaseModel):
+    screen: bool = True
+    terminal: bool = True
+    processes: bool = True
+    modify_files: bool = False
+    install_dependencies: bool = False
+    network: bool = False
+
+
+class AccessUpdate(BaseModel):
+    capability: Capability
+    allowed: bool
+
+
+class ExecutionAccess(BaseModel):
+    modify_files: bool = False
+    install_dependencies: bool = False
+    network: bool = False
+
+
+class PermissionRequest(BaseModel):
+    id: str
+    capabilities: list[Capability]
+    reason: str
+    phase: Literal['context', 'execution']
+    status: Literal['pending', 'allowed', 'denied', 'cancelled'] = 'pending'
+    proposal_id: Optional[str] = None
+    commands: list[list[str]] = Field(default_factory=list)
+
+
+class PermissionDecision(BaseModel):
+    decision: Literal['allow', 'deny']
+
+
 class ActionRequest(BaseModel):
     action_id: str
     kind: Literal["apply_patch", "run_command"]
@@ -98,6 +136,7 @@ class ActionRequest(BaseModel):
     command: Optional[list[str]] = None  # argv list, never a shell string
     working_dir: str
     approval_token: str  # issued by M2 on user approval
+    access: ExecutionAccess = Field(default_factory=ExecutionAccess)
 
 
 class ActionResult(BaseModel):
@@ -128,6 +167,8 @@ class Proposal(BaseModel):
     commands: list[list[str]] = Field(default_factory=list)
     policy_ok: bool  # result of M1 validate_action
     policy_denial_reason: Optional[str] = None
+    required_permissions: list[Capability] = Field(default_factory=list)
+    requires_network: bool = False
 
 
 class Analysis(BaseModel):
@@ -136,6 +177,8 @@ class Analysis(BaseModel):
     explanation: str  # markdown
     confidence: float = Field(ge=0, le=1)
     proposals: list[Proposal] = Field(default_factory=list)
+    needed_context: list[Literal['screen', 'terminal', 'processes']] = Field(default_factory=list)
+    context_reason: str = ''
 
 
 class TaskError(BaseModel):
@@ -155,6 +198,8 @@ class ContextSummary(BaseModel):  # lightweight, no huge blobs
 
 TaskState = Literal[
     "queued",
+    "planning_context",
+    "awaiting_permission",
     "collecting_context",
     "analyzing",
     "awaiting_approval",
@@ -177,6 +222,10 @@ class TaskView(BaseModel):
     analysis: Optional[Analysis] = None
     action_results: list[ActionResult] = Field(default_factory=list)
     error: Optional[TaskError] = None
+    selected_sources: list[Capability] = Field(default_factory=list)
+    permission_requests: list[PermissionRequest] = Field(default_factory=list)
+    task_grants: list[Capability] = Field(default_factory=list)
+    access: AccessSettings = Field(default_factory=AccessSettings)
 
 
 class DecisionRequest(BaseModel):

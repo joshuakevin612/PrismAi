@@ -4,6 +4,12 @@ Tests secret redaction across various credential types.
 """
 
 import os
+
+
+def test_unregistered_nvidia_credential_is_redacted():
+    from perception.redactor import SecretRedactor
+    key = 'nvapi-' + 'UnregisteredSyntheticValue' * 3
+    assert key not in SecretRedactor().redact('NVIDIA_API_KEY=' + key)
 from perception.redactor import SecretRedactor, redact_secrets, register_secret
 
 

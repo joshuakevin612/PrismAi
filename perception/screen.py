@@ -12,10 +12,12 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 import mss
+import mss.tools
 from PIL import Image
 
 from shared.schemas import ScreenContext
 from perception.redactor import redact_secrets
+from perception.artifacts import screenshots
 
 # Configurable Tesseract path or executable search
 _TESSERACT_ENV_VAR = "TESSERACT_PATH"
@@ -77,14 +79,15 @@ def capture_screen(
     Never raises exceptions: returns (ScreenContext, warnings).
     """
     warnings: list[str] = []
-    target_dir = output_dir or _DEFAULT_SCREENSHOT_DIR
-    target_dir.mkdir(parents=True, exist_ok=True)
+    target_dir = output_dir
 
     screenshot_path: Optional[str] = None
     width = 0
     height = 0
 
     try:
+        if target_dir:
+            target_dir.mkdir(parents=True, exist_ok=True)
         with mss.MSS() as sct:
             monitors = sct.monitors
             # monitors[0] is all monitors combined, monitors[1] is monitor 1
@@ -99,7 +102,7 @@ def capture_screen(
 
             timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
             file_name = f"screen_{timestamp_str}.png"
-            file_path = target_dir / file_name
+            file_path = target_dir / file_name if target_dir else screenshots.allocate()
 
             sct_img = sct.grab(mon)
             mss.tools.to_png(sct_img.rgb, sct_img.size, output=str(file_path))
@@ -120,13 +123,11 @@ def capture_screen(
 
                 with Image.open(screenshot_path) as img:
                     # Extract text and data for confidence calculation
-                    raw_text = pytesseract.image_to_string(img, timeout=5)
-                    ocr_text = redact_secrets(raw_text.strip())
-
-                    # Calculate average confidence
+                    # One bounded OCR invocation supplies both text and confidence.
                     data = pytesseract.image_to_data(
-                        img, output_type=pytesseract.Output.DICT, timeout=5
+                        img, output_type=pytesseract.Output.DICT, timeout=4
                     )
+                    ocr_text = redact_secrets(' '.join(str(word) for word in data.get('text', []) if str(word).strip()))
                     confs = [
                         float(c)
                         for c in data.get("conf", [])
@@ -147,4 +148,7 @@ def capture_screen(
         screenshot_path=screenshot_path,
     )
 
+    if output_dir is None and screenshots.closed:
+        screenshots.cleanup(close=True)
+        return None, warnings + ['SCREEN_CAPTURE_CANCELLED']
     return screen_ctx, warnings

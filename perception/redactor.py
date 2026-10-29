@@ -10,6 +10,9 @@ from typing import Optional, Set
 
 # Named regex replacement rules (pattern, replacement)
 SECRET_RULES = [
+    # NVIDIA keys can appear in a different project's source/logs and therefore
+    # need pattern protection as well as exact matching of this process's key.
+    (re.compile(r"\b(nvapi-[a-zA-Z0-9_\-]{10,})\b"), "[REDACTED_SECRET]"),
     # 1. Private Keys (PEM blocks)
     (
         re.compile(
@@ -119,6 +122,7 @@ _DEFAULT_REDACTOR = SecretRedactor()
 
 def redact_secrets(text: Optional[str]) -> str:
     """Convenience functional interface for redacting secrets."""
+    _DEFAULT_REDACTOR._harvest_env_secrets()
     return _DEFAULT_REDACTOR.redact(text)
 
 

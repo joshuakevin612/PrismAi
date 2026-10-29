@@ -1,0 +1,2 @@
+-r ../requirements-bootstrap.in
+pytest==9.2.0

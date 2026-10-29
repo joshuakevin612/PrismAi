@@ -40,7 +40,7 @@ def collect_processes(
                 name = info.get("name") or "unknown"
                 cmdline_list = info.get("cmdline") or []
                 cmdline_str = " ".join(cmdline_list) if cmdline_list else name
-                
+
                 # Secret redact command line
                 cmdline_redacted = redact_secrets(cmdline_str)
 

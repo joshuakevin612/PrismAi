@@ -167,12 +167,13 @@ def collect_terminal_errors(
     errors: List[TerminalError] = []
 
     try:
+        from backend.config import settings
+        root = Path(settings.ALLOWED_ROOT).resolve()
         # Check standard log or error file locations if present
         candidates = [
-            Path(".pytest_cache/v/cache/lastfailed"),
-            Path("terminal_stderr.log"),
-            Path("error.log"),
-            Path(".prism/terminal.log"),
+            root / "terminal_stderr.log",
+            root / "error.log",
+            root / ".prism/terminal.log",
         ]
         if search_dirs:
             for sdir in search_dirs:
@@ -181,7 +182,11 @@ def collect_terminal_errors(
         for path in candidates:
             if path.is_file():
                 try:
-                    content = path.read_text(encoding="utf-8", errors="replace")
+                    if not path.resolve().is_relative_to(root):
+                        continue
+                    with path.open('rb') as stream:
+                        stream.seek(max(0, path.stat().st_size - 64_000))
+                        content = stream.read(64_000).decode('utf-8', errors='replace')
                     found = parse_terminal_errors(content)
                     errors.extend(found)
                 except Exception as read_err:
